@@ -2,6 +2,14 @@
 
 Theo chuẩn [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
+## [1.0.2] — 2026-04-17
+
+### Thêm mới
+
+- **Extension `techla-pancake`**: auto-detect Page ID từ JWT payload của API
+  key — user chỉ cần điền 1 field thay vì 2. Field Page ID trở thành optional
+  (để override nếu cần).
+
 ## [1.0.1] — 2026-04-17
 
 ### Sửa

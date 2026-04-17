@@ -29,17 +29,38 @@ const {
 // ───────────────────────────────────────────────────────────────
 
 const API_KEY = process.env.PANCAKE_API_KEY;
-const PAGE_ID = process.env.PANCAKE_PAGE_ID;
 const BASE_URL =
   process.env.PANCAKE_BASE_URL || "https://pages.fm/api/public_api/v1";
 
+// Page ID: ưu tiên user config; nếu trống thì decode từ JWT payload của API key
+// (Pancake gắn token theo từng page, id nhúng thẳng vào JWT).
+function decodePageIdFromToken(token) {
+  if (!token || typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const payloadB64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const json = Buffer.from(payloadB64, "base64").toString("utf8");
+    const payload = JSON.parse(json);
+    return payload.id || null;
+  } catch {
+    return null;
+  }
+}
+
+const PAGE_ID = process.env.PANCAKE_PAGE_ID || decodePageIdFromToken(API_KEY);
+
 function requireConfig() {
-  const missing = [];
-  if (!API_KEY) missing.push("PANCAKE_API_KEY");
-  if (!PAGE_ID) missing.push("PANCAKE_PAGE_ID");
-  if (missing.length) {
+  if (!API_KEY) {
     throw new Error(
-      `Thiếu cấu hình: ${missing.join(", ")}. Mở Claude Desktop → Settings → Extensions → Techla Pancake để điền.`
+      "Thiếu PANCAKE_API_KEY. Mở Claude Desktop → Settings → Extensions → Techla Pancake để điền."
+    );
+  }
+  if (!PAGE_ID) {
+    throw new Error(
+      "Không xác định được Page ID. Token không hợp lệ hoặc không chứa 'id'. " +
+        "Kiểm tra lại API key trong Settings → Extensions → Techla Pancake, " +
+        "hoặc điền thủ công vào ô Page ID (format: pzl_...)."
     );
   }
 }
@@ -513,7 +534,17 @@ async function main() {
   );
 }
 
-main().catch((err) => {
-  console.error("[techla-pancake] FATAL:", err);
-  process.exit(1);
-});
+// Chỉ chạy stdio server khi được invoke trực tiếp (không chạy khi require từ test)
+if (require.main === module) {
+  main().catch((err) => {
+    console.error("[techla-pancake] FATAL:", err);
+    process.exit(1);
+  });
+}
+
+// Export handlers để test độc lập
+module.exports = {
+  HANDLERS,
+  decodePageIdFromToken,
+  getPageId: () => PAGE_ID,
+};

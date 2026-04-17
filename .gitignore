@@ -30,3 +30,7 @@ Thumbs.db
 # Local
 .env
 .env.local
+
+# Live test scripts chứa credentials
+**/e2e-live-test.js
+**/test-live.js

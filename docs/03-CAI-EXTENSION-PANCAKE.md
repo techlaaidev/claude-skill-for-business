@@ -34,25 +34,9 @@ Extension **chỉ chạy trên Claude Desktop** (không chạy web/mobile).
 
 ---
 
-## Bước 2 — Lấy Page ID
+## Bước 2 — Cài file `.mcpb`
 
-Vẫn trong Pancake admin, nhìn URL ở thanh địa chỉ:
-
-```
-https://pages.fm/admin/pages/1234567/messages
-                             ↑↑↑↑↑↑↑
-                             Page ID (thường 7-10 chữ số)
-```
-
-Copy **chỉ phần số** → đó là `pancake_page_id`.
-
-> 📷 *(Placeholder screenshot: URL bar với page ID được highlight)*
-
----
-
-## Bước 3 — Cài file `.mcpb`
-
-1. Trong bundle, vào `extensions/` → tìm file `techla-pancake-1.0.0.mcpb`.
+1. Trong bundle, vào `extensions/` → tìm file `techla-pancake-1.0.2.mcpb`.
 2. **Cách 1**: Double-click file → Claude Desktop tự mở dialog cài đặt.
 3. **Cách 2**: Mở Claude Desktop → Settings (`⌘/Ctrl + ,`) → tab **Extensions** → bấm **Install from file** → chọn `.mcpb`.
 
@@ -60,23 +44,25 @@ Copy **chỉ phần số** → đó là `pancake_page_id`.
 
 ---
 
-## Bước 4 — Nhập credentials
+## Bước 3 — Nhập credentials
 
-Claude Desktop sẽ hỏi 2 field:
+Claude Desktop sẽ hỏi:
 
 | Field | Giá trị |
 |---|---|
 | **Pancake API Key** | Paste token từ Bước 1 (hiển thị dạng `••••••••`) |
-| **Page ID (Zalo cá nhân)** | Paste số page ID từ Bước 2 |
+| **Page ID** (optional) | **Để trống** — extension tự detect từ token. Chỉ điền nếu cần override. |
 | **Base URL** (optional) | Để mặc định: `https://pages.fm/api/public_api/v1` |
 
 Bấm **Save & Enable**.
+
+> Token Pancake là JWT chứa sẵn `page_id` trong payload, extension decode và tự dùng. Bạn không cần tìm page_id thủ công.
 
 > 📷 *(Placeholder screenshot: dialog cấu hình extension với 2 field)*
 
 ---
 
-## Bước 5 — Test thử
+## Bước 4 — Test thử
 
 Mở cuộc trò chuyện mới, gõ:
 

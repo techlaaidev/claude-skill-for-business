@@ -2,9 +2,9 @@
   "manifest_version": "0.2",
   "name": "techla-pancake",
   "display_name": "Techla Pancake Zalo Monitor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Theo dõi và phân tích tin nhắn từ các nhóm Zalo của Pancake (dành cho chủ quán cafe/F&B).",
-  "long_description": "MCP extension cho Claude Desktop, kết nối với Pancake để chủ quán có thể hỏi Claude về tình hình nhóm Zalo — ví dụ 'nhóm nhân viên có vấn đề gì cần xử lý', 'khách VIP phàn nàn gì tuần này'. Chỉ cần Pancake API key và Page ID, không cần cài thêm gì.",
+  "long_description": "MCP extension cho Claude Desktop, kết nối với Pancake để chủ quán có thể hỏi Claude về tình hình nhóm Zalo — ví dụ 'nhóm nhân viên có vấn đề gì cần xử lý', 'khách VIP phàn nàn gì tuần này'. Chỉ cần điền Pancake API key, Page ID sẽ tự detect từ token.",
   "author": {
     "name": "Techla",
     "url": "https://techla.vn"
@@ -33,9 +33,9 @@
     },
     "pancake_page_id": {
       "type": "string",
-      "title": "Page ID (Zalo cá nhân)",
-      "description": "ID số (7–10 chữ số) của page Zalo cá nhân trong URL admin Pancake. Ví dụ: https://pages.fm/admin/pages/1234567/... → page_id = 1234567.",
-      "required": true
+      "title": "Page ID (optional)",
+      "description": "Để trống — extension sẽ tự detect từ API key. Chỉ điền nếu bạn muốn override (format: pzl_...).",
+      "required": false
     },
     "pancake_base_url": {
       "type": "string",
