@@ -1,0 +1,22 @@
+# Cấu hình chung cho Skill "Soạn văn bản"
+# Author: Techla — v1.0.0
+#
+# Sử dụng: truyền file này qua flag --config khi chạy bất kỳ builder nào:
+#     python scripts/builder_hop_dong.py --data hd.json --config config.yaml -o hd.docx
+#     python scripts/builder_bien_ban_ca.py --data bb.json --config config.yaml -o bb.docx
+#     python scripts/builder_thong_bao.py  --data tb.json --config config.yaml -o tb.docx
+
+# --- Thông tin quán / cửa hàng ---
+ten_quan: "Quán Cafe Sao Đêm"
+dia_chi_quan: "Số 12 phố Hàng Bài, Hoàn Kiếm, Hà Nội"
+ma_so_thue: "0109876543"
+dien_thoai: "024 3936 7890"
+email: "contact@saodem.vn"
+
+# --- Người đại diện ký hợp đồng ---
+nguoi_dai_dien: "Trần Thị Chủ"
+chuc_vu_dai_dien: "Chủ quán"
+
+# --- Tuỳ biến định dạng (optional) ---
+# Font và cỡ chữ hiện được hardcode theo chuẩn hành chính VN (Times New Roman 13pt).
+# Nếu muốn đổi, sửa trực tiếp trong scripts/doc_style.py (biến BASE_FONT, BASE_SIZE).

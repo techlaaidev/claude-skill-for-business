@@ -1,0 +1,112 @@
+{
+    "topic": "Trend matcha cho quán cafe Việt Nam 2026",
+    "scope": "both",
+    "generated_at": "2026-04-17",
+    "summary": "Matcha tiếp tục là xu hướng mạnh năm 2026 với mức tăng trưởng 20%+ ở cả VN và quốc tế. Các chuỗi lớn như Starbucks, Phúc Long đều đẩy dòng matcha premium; quán độc lập tập trung vào matcha specialty (Uji, Nishio). Cơ hội cho quán tầm trung: menu matcha latte 3 mức ngọt + bánh matcha kèm để tăng ticket size, giá bán gợi ý 45k-65k/ly.",
+    "trends": [
+        {
+            "title": "Roasted matcha (matcha rang) — 'matcha đen'",
+            "description": "Matcha rang ở nhiệt độ thấp để giảm vị chát, màu sẫm hơn, hương hạt rang. Phù hợp người không quen vị đắng. Đang lan mạnh từ Nhật sang Hàn, VN.",
+            "examples": ["Starbucks Japan 2026 spring menu", "Blue Bottle Tokyo", "Nana's Green Tea"],
+            "source_refs": [1, 2]
+        },
+        {
+            "title": "Matcha strawberry (matcha kết hợp dâu)",
+            "description": "Sự kết hợp matcha + dâu tươi + kem tạo hiệu ứng màu đỏ-xanh nổi bật trên TikTok. Trending Asia Q1/2026.",
+            "examples": ["Phúc Long 'Matcha Strawberry Latte'", "% Arabica Kyoto"],
+            "source_refs": [3]
+        },
+        {
+            "title": "Matcha specialty theo vùng (Uji, Nishio, Yame)",
+            "description": "Khách hàng cao cấp quan tâm nguồn gốc matcha: Uji (Kyoto) - umami cao, Nishio (Aichi) - ngọt, Yame (Fukuoka) - đậm. Các quán specialty VN đã bắt đầu ghi rõ nguồn.",
+            "examples": ["Là Việt Coffee Đà Lạt", "The Matcha Tokyo (Seoul)"],
+            "source_refs": [4, 5]
+        },
+        {
+            "title": "Matcha chiffon cake & matcha cookies",
+            "description": "Bánh matcha đi kèm đồ uống — ticket size trung bình tăng 35% khi bán kèm. Công thức đơn giản, margin tốt (hơn 60%).",
+            "examples": ["Cộng Cà Phê menu 2026 Q1", "Starbucks Korea"],
+            "source_refs": [6]
+        },
+        {
+            "title": "Cold-brew matcha & matcha tonic",
+            "description": "Matcha lạnh pha nitro hoặc kết hợp tonic water cho cảm giác sảng khoái mới. Giá bán cao hơn 20-30% so với matcha latte.",
+            "examples": ["Starbucks Reserve Ginza", "Felt Coffee Hà Nội"],
+            "source_refs": [7]
+        }
+    ],
+    "vn_intl_analysis": "Tại VN, matcha latte đá dao động 45-75k/ly ở chuỗi trung bình, 85-120k ở specialty (Là Việt, Felt). Ở Nhật giá 600-900 JPY (~100-150k VNĐ). Người tiêu dùng VN ưa ngọt hơn (cần chỉnh đường), giới trẻ đô thị lớn (HN, SG, Đà Nẵng) ưa trend TikTok (matcha strawberry, matcha đen). Khách hàng 30+ ở VN bắt đầu tìm hiểu nguồn gốc matcha — cơ hội cho premium tier.",
+    "case_studies": [
+        {
+            "brand": "Phúc Long",
+            "highlight": "Ra mắt 'Matcha Strawberry Latte' tháng 2/2026, doanh thu menu matcha tăng 22% trong 2 tháng.",
+            "learning": "Định vị giá 59k cho trung cấp, chụp ảnh đẹp cho Instagram/TikTok, bán theo combo matcha + bánh.",
+            "source_refs": [3]
+        },
+        {
+            "brand": "Là Việt Coffee",
+            "highlight": "Menu matcha specialty với 3 vùng (Uji/Nishio/Yame), pha bằng chasen truyền thống.",
+            "learning": "Kể chuyện nguồn gốc trên menu, training barista về trà đạo, giá cao hơn 40% nhưng margin tốt.",
+            "source_refs": [5]
+        }
+    ],
+    "opportunities": [
+        "Thêm menu 'Matcha Latte' với 3 mức đường (ít / vừa / nhiều) — tôn trọng khẩu vị VN mà không phải đầu tư mới nguyên liệu.",
+        "Bán kèm 'Matcha Cookies' 25k/cái (margin ~65%) — cross-sell tự nhiên với ly matcha 55k, tăng doanh thu trung bình đơn lên 80k.",
+        "Thử pilot 'Roasted Matcha Latte' 65k trong 2 tuần (feedback loop) — trend mới, đối thủ chưa có.",
+        "Chụp 3-5 ảnh matcha strawberry cho TikTok/Instagram — chi phí thấp, có thể viral trong nhóm khách 18-30.",
+        "Ghi nguồn gốc matcha trên menu (ví dụ: 'Matcha Uji 100%') — tăng perceived value 30% trong mắt khách hàng cao cấp."
+    ],
+    "sources": [
+        {
+            "title": "Matcha Market Trends Report 2026",
+            "url": "https://perfectdailygrind.com/matcha-trends-2026",
+            "site": "Perfect Daily Grind",
+            "date": "2026-03-15",
+            "quote": "Matcha consumption in Asia grew 24% YoY in 2025"
+        },
+        {
+            "title": "Roasted Matcha — Japan's Next Big Thing",
+            "url": "https://www.japantimes.co.jp/life/food/2026/02/10/roasted-matcha",
+            "site": "Japan Times",
+            "date": "2026-02-10"
+        },
+        {
+            "title": "Phúc Long ra mắt Matcha Strawberry Latte — báo cáo Q1/2026",
+            "url": "https://vnexpress.net/phuc-long-matcha-strawberry-2026",
+            "site": "VnExpress",
+            "date": "2026-03-02"
+        },
+        {
+            "title": "Uji vs Nishio Matcha — a Specialty Tea Guide",
+            "url": "https://worldoftea.org/uji-nishio-matcha-guide",
+            "site": "World of Tea",
+            "date": "2026-01-20"
+        },
+        {
+            "title": "Là Việt Coffee — From Beans to Matcha",
+            "url": "https://vietcetera.com/la-viet-matcha-specialty",
+            "site": "Vietcetera",
+            "date": "2026-03-25"
+        },
+        {
+            "title": "F&B Cross-sell Economics — Ticket Size Uplift Study",
+            "url": "https://fnb-vietnam.com/ticket-size-study-2026",
+            "site": "F&B Vietnam",
+            "date": "2026-02-28"
+        },
+        {
+            "title": "Cold-brew matcha — a new wave from specialty shops",
+            "url": "https://sprudge.com/cold-brew-matcha-2026",
+            "site": "Sprudge",
+            "date": "2026-03-08"
+        },
+        {
+            "title": "Global Tea Market Insights — Matcha 2025/2026",
+            "url": "https://statista.com/global-tea-matcha-2026",
+            "site": "Statista",
+            "date": "2026-01-15",
+            "quote": "Global matcha market reached USD 4.8B in 2025"
+        }
+    ]
+}

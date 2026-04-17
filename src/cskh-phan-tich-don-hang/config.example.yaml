@@ -1,0 +1,38 @@
+# Config mẫu cho skill CSKH Phân tích đơn hàng
+# Đặt file này tên 'config.yaml' cạnh file Excel, hoặc truyền qua --config.
+# Xóa/comment những dòng bạn muốn để mặc định.
+
+# Ngưỡng cảnh báo "khách sắp mất":
+# Skill tính nhịp đặt trung bình (avg_gap) của mỗi KH từ 2 đơn gần nhất trở lên.
+# Nếu (ngày hiện tại - ngày đơn cuối) > avg_gap × churn_threshold_multiplier
+# thì KH đó bị flag là churn.
+# Ví dụ: KH thường đặt mỗi 10 ngày, nếu 16+ ngày không đặt → churn.
+churn_threshold_multiplier: 1.5
+
+# Số khách VIP hiển thị trong bảng top VIP.
+vip_top_n: 10
+
+# Số ngày để xếp SP vào "xác sống" (dead product):
+# SP không có đơn trong khoảng thời gian dữ liệu HOẶC đơn cuối cách reference_date
+# quá ngưỡng này sẽ bị đánh dấu.
+dead_product_days: 90
+
+# Bật/tắt phân tích "cặp sản phẩm hay mua cùng" (basket analysis).
+# Tắt nếu dữ liệu ít, bảng sẽ trống không ý nghĩa.
+enable_basket_analysis: true
+
+# Ngày tham chiếu để tính "đã lâu bao nhiêu ngày":
+# null = dùng ngày của đơn mới nhất trong file (hợp lý cho file đã cũ).
+# Hoặc set cụ thể: reference_date: "2026-04-17"
+reference_date: null
+
+# Số đơn tối thiểu để tính nhịp đặt — nếu KH chỉ có 1 đơn, không tính churn/rhythm.
+min_orders_for_rhythm: 2
+
+# Ngưỡng giảm nhịp (decreasing rhythm):
+# Nếu số đơn tháng cuối giảm > ngưỡng này so với TB các tháng trước → flag.
+# 0.4 = giảm hơn 40%.
+decreasing_rhythm_threshold: 0.4
+
+# Số đơn tối thiểu trên toàn dữ liệu để KH được xét decreasing rhythm.
+decreasing_rhythm_min_orders: 4

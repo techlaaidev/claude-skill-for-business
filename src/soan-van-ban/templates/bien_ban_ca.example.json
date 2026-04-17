@@ -1,0 +1,24 @@
+{
+    "shift": "chiều",
+    "shift_date": "2026-04-17",
+    "handover_by": "Nguyễn Văn An",
+    "receive_by": "Trần Thị Bình",
+    "cash_opening": 2000000,
+    "cash_closing": 3850000,
+    "materials": [
+        {"name": "Sữa tươi Vinamilk không đường", "unit": "lít", "qty_start": 20, "qty_end": 8, "note": "Cần đặt thêm 10 lít"},
+        {"name": "Cafe Robusta rang xay", "unit": "kg", "qty_start": 5, "qty_end": 3.2, "note": ""},
+        {"name": "Bột matcha Nhật", "unit": "gói", "qty_start": 12, "qty_end": 7, "note": ""},
+        {"name": "Siro vani", "unit": "chai", "qty_start": 4, "qty_end": 2, "note": "Còn 2 chai, đặt thêm tuần sau"}
+    ],
+    "equipment": [
+        {"name": "Máy pha cafe La Marzocco Linea Mini", "status": "Bình thường", "note": ""},
+        {"name": "Máy xay cà phê Mazzer Mini", "status": "Kêu to hơn bình thường", "note": "Cần vệ sinh lưỡi xay"},
+        {"name": "Tủ lạnh trưng bày", "status": "Bình thường", "note": ""},
+        {"name": "Máy pha trà Hario V60", "status": "Bình thường", "note": ""}
+    ],
+    "incidents": "Mất điện khoảng 30 phút lúc 15h30 do bảo trì khu vực. Đã thông báo khách và hoàn tiền 2 đơn gọi online không pha kịp.",
+    "complaints": "1 khách phàn nàn matcha latte hơi đắng — đã pha lại cốc mới và tặng kèm bánh quy.",
+    "handover_notes": "1. Đặt thêm sữa tươi và siro vani trong tối nay.\n2. Kiểm tra máy xay Mazzer, nếu cần gọi bảo trì.\n3. Ca tối có 1 đơn đặt bàn 10 khách lúc 19h (đã ghi trong sổ đặt bàn).",
+    "location": "Quán cafe Sao Đêm, Hà Nội"
+}

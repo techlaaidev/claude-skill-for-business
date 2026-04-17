@@ -1,0 +1,73 @@
+{
+  "manifest_version": "0.2",
+  "name": "techla-pancake",
+  "display_name": "Techla Pancake Zalo Monitor",
+  "version": "1.0.0",
+  "description": "Theo dõi và phân tích tin nhắn từ các nhóm Zalo của Pancake (dành cho chủ quán cafe/F&B).",
+  "long_description": "MCP extension cho Claude Desktop, kết nối với Pancake để chủ quán có thể hỏi Claude về tình hình nhóm Zalo — ví dụ 'nhóm nhân viên có vấn đề gì cần xử lý', 'khách VIP phàn nàn gì tuần này'. Chỉ cần Pancake API key và Page ID, không cần cài thêm gì.",
+  "author": {
+    "name": "Techla",
+    "url": "https://techla.vn"
+  },
+  "license": "Xem LICENSE.md",
+  "server": {
+    "type": "node",
+    "entry_point": "server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server.js"],
+      "env": {
+        "PANCAKE_API_KEY": "${user_config.pancake_api_key}",
+        "PANCAKE_PAGE_ID": "${user_config.pancake_page_id}",
+        "PANCAKE_BASE_URL": "${user_config.pancake_base_url}"
+      }
+    }
+  },
+  "user_config": {
+    "pancake_api_key": {
+      "type": "string",
+      "title": "Pancake API Key",
+      "description": "Lấy từ Pancake admin → Cấu hình → Webhook & API. Key này được lưu mã hóa trong Keychain/Credential Manager.",
+      "sensitive": true,
+      "required": true
+    },
+    "pancake_page_id": {
+      "type": "string",
+      "title": "Page ID (Zalo cá nhân)",
+      "description": "ID số (7–10 chữ số) của page Zalo cá nhân trong URL admin Pancake. Ví dụ: https://pages.fm/admin/pages/1234567/... → page_id = 1234567.",
+      "required": true
+    },
+    "pancake_base_url": {
+      "type": "string",
+      "title": "Base URL (optional)",
+      "description": "Mặc định: https://pages.fm/api/public_api/v1. Chỉ đổi nếu Pancake cung cấp URL khác.",
+      "default": "https://pages.fm/api/public_api/v1",
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "list_conversations",
+      "description": "Liệt kê các cuộc trò chuyện / nhóm Zalo đang có trong Pancake page."
+    },
+    {
+      "name": "get_messages",
+      "description": "Lấy tin nhắn trong một cuộc trò chuyện cụ thể (có thể filter theo thời gian)."
+    },
+    {
+      "name": "search_messages",
+      "description": "Tìm tin nhắn theo từ khóa trong tất cả hoặc một nhóm cụ thể."
+    },
+    {
+      "name": "summarize_conversation",
+      "description": "Tóm tắt nhanh tin nhắn của 1 cuộc trò chuyện trong N ngày qua."
+    }
+  ],
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin", "win32"],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  }
+}

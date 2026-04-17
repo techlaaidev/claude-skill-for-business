@@ -1,0 +1,32 @@
+# Cấu hình Skill "Research sản phẩm mới"
+# Author: Techla — v1.0.0
+
+# --- Brand VN ưu tiên research khi không chỉ định rõ phạm vi ---
+vn_brands_priority:
+  - "Highlands Coffee"
+  - "Phúc Long"
+  - "The Coffee House"
+  - "Katinat Saigon Kafé"
+  - "Starbucks Vietnam"
+  - "Cộng Cà Phê"
+  - "Là Việt Coffee"
+  - "Trung Nguyên Legend"
+
+# --- Thị trường quốc tế ưu tiên ---
+international_markets:
+  - "Japan specialty coffee & matcha"
+  - "Korean dessert cafe"
+  - "Taiwan bubble tea innovation"
+  - "Australia specialty coffee"
+  - "US third-wave coffee"
+
+# --- Số nguồn tối thiểu để đưa vào báo cáo ---
+min_sources: 8
+
+# --- Auto-convert sang pptx sau khi tạo .md ---
+auto_convert_pptx: false
+
+# --- PPTX engine (auto | marp | pptx) ---
+# auto: dùng marp nếu có, không thì dùng python-pptx
+pptx_engine: "auto"
+pptx_theme: "default"   # marp themes: default | gaia | uncover

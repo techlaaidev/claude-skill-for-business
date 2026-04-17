@@ -1,0 +1,32 @@
+# Build outputs
+build/
+dist/
+*.zip
+*.mcpb
+*.skill
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Local
+.env
+.env.local

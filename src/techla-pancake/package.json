@@ -1,0 +1,19 @@
+{
+  "name": "techla-pancake",
+  "version": "1.0.0",
+  "description": "MCP extension theo dõi tin nhắn Zalo qua Pancake API (cho Claude Desktop).",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "build": "bash build.sh"
+  },
+  "author": "Techla",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

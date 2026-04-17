@@ -1,0 +1,15 @@
+{
+    "employee_name": "Nguyễn Văn An",
+    "dob": "2003-05-12",
+    "id_number": "001203009876",
+    "id_issue_date": "2021-08-15",
+    "id_issue_place": "Cục Cảnh sát QLHC về TTXH",
+    "address": "Số 15, ngõ 120, phố Yên Lãng, Đống Đa, Hà Nội",
+    "phone": "0912345678",
+    "position": "Barista",
+    "salary_monthly": 8000000,
+    "probation_months": 2,
+    "start_date": "2026-05-01",
+    "shift_description": "Ca sáng hoặc ca chiều, 8 tiếng/ngày, 6 ngày/tuần (nghỉ chủ nhật)",
+    "allowance": "Hỗ trợ ăn trưa 30.000đ/ngày; thưởng doanh số 3% nếu đạt KPI"
+}
