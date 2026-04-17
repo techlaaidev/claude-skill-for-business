@@ -2,6 +2,30 @@
 
 Theo chuẩn [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
+## [1.0.3] — 2026-04-17
+
+### Sửa
+
+- **Extension `techla-pancake`**: `list_conversations` giờ dùng **Pancake Public
+  API v2** — trả về cả **group Zalo** (trước đó v1 chỉ trả inbox 1-1 nên anh chị
+  thấy danh sách trống khi page toàn group). Pagination đổi sang cursor
+  `last_conversation_id` (60 conv/call).
+- **Extension `techla-pancake`**: `get_messages` giữ **v1** (v2 không có endpoint
+  này). Pagination theo `current_count` (offset) chuẩn spec Pancake. Tự lật
+  trang đến khi đủ `limit` hoặc gặp `since`.
+- **Extension `techla-pancake`**: tin nhắn trả về giờ **newest-first** (trước
+  đó lấy nhầm tin cũ nhất trong batch).
+- **Extension `techla-pancake`**: thêm **rate-limit throttle 220ms** giữa
+  request (Pancake giới hạn 5 req/page/s).
+- **Extension `techla-pancake`**: bắt lỗi `HTTP 200 + {"success": false}` của
+  Pancake (trước đó silent-swallow thành empty list). Giờ throw rõ
+  `"Sai Pancake API key"` để user biết đường cập nhật.
+
+### Thay đổi
+
+- Bỏ user_config `pancake_base_url` (không còn dùng — endpoint v1/v2 hard-code
+  theo từng tool).
+
 ## [1.0.2] — 2026-04-17
 
 ### Thêm mới

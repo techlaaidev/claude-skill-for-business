@@ -13,8 +13,12 @@
  *
  * Env (Claude Desktop truyền qua manifest):
  *   - PANCAKE_API_KEY  (required, sensitive)
- *   - PANCAKE_PAGE_ID  (required)
- *   - PANCAKE_BASE_URL (optional, default https://pages.fm/api/public_api/v1)
+ *   - PANCAKE_PAGE_ID  (optional — auto-detect từ JWT payload)
+ *
+ * Endpoints (theo docs https://developer.pancake.biz):
+ *   - list_conversations → v2 (trả cả INBOX + GROUP, cursor `last_conversation_id`)
+ *   - get_messages       → v1 (v2 không có endpoint này; offset `current_count`)
+ * Rate limit: 5 req/page/s → throttle ≥ 220ms/req.
  */
 
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
@@ -29,8 +33,8 @@ const {
 // ───────────────────────────────────────────────────────────────
 
 const API_KEY = process.env.PANCAKE_API_KEY;
-const BASE_URL =
-  process.env.PANCAKE_BASE_URL || "https://pages.fm/api/public_api/v1";
+const V1_BASE = "https://pages.fm/api/public_api/v1";
+const V2_BASE = "https://pages.fm/api/public_api/v2";
 
 // Page ID: ưu tiên user config; nếu trống thì decode từ JWT payload của API key
 // (Pancake gắn token theo từng page, id nhúng thẳng vào JWT).
@@ -66,17 +70,30 @@ function requireConfig() {
 }
 
 // ───────────────────────────────────────────────────────────────
-// HTTP helper
+// HTTP helper + rate-limit throttle
 // ───────────────────────────────────────────────────────────────
 
-function buildUrl(path, query = {}) {
-  const q = new URLSearchParams({ ...query, access_token: API_KEY });
-  return `${BASE_URL}${path}?${q.toString()}`;
+// Pancake giới hạn 5 req/page/s. Đệm thêm buffer → cách nhau ≥ 220ms.
+const MIN_REQ_INTERVAL_MS = 220;
+let _lastRequestAt = 0;
+
+async function throttle() {
+  const elapsed = Date.now() - _lastRequestAt;
+  if (elapsed < MIN_REQ_INTERVAL_MS) {
+    await new Promise((r) => setTimeout(r, MIN_REQ_INTERVAL_MS - elapsed));
+  }
+  _lastRequestAt = Date.now();
 }
 
-async function pancakeGet(path, query = {}) {
+function buildUrl(base, path, query = {}) {
+  const q = new URLSearchParams({ ...query, access_token: API_KEY });
+  return `${base}${path}?${q.toString()}`;
+}
+
+async function pancakeGet(base, path, query = {}) {
   requireConfig();
-  const url = buildUrl(path, query);
+  await throttle();
+  const url = buildUrl(base, path, query);
 
   let res;
   try {
@@ -109,11 +126,27 @@ async function pancakeGet(path, query = {}) {
     throw new Error(`Pancake trả lỗi HTTP ${res.status}: ${text}`);
   }
 
+  let data;
   try {
-    return await res.json();
+    data = await res.json();
   } catch (err) {
     throw new Error(`Pancake trả response không phải JSON: ${err.message}`);
   }
+
+  // Pancake đôi khi trả HTTP 200 nhưng kèm {"success": false, "message": "..."}
+  // → phải check field 'success' thay vì chỉ HTTP status.
+  if (data && data.success === false) {
+    const code = data.error_code ? ` (error_code=${data.error_code})` : "";
+    const msg = data.message || "Pancake trả về lỗi không rõ";
+    if (/invalid.*access.*token|access_token/i.test(msg)) {
+      throw new Error(
+        `Sai Pancake API key${code}: "${msg}". Mở Claude Desktop → Settings → Extensions → Techla Pancake → cập nhật API key mới.`
+      );
+    }
+    throw new Error(`Pancake lỗi${code}: ${msg}`);
+  }
+
+  return data;
 }
 
 async function safeText(res) {
@@ -197,7 +230,7 @@ function textOf(msg) {
 // ───────────────────────────────────────────────────────────────
 
 const server = new Server(
-  { name: "techla-pancake", version: "1.0.0" },
+  { name: "techla-pancake", version: "1.0.3" },
   { capabilities: { tools: {} } }
 );
 
@@ -206,19 +239,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "list_conversations",
       description:
-        "Liệt kê các cuộc trò chuyện / nhóm Zalo của page Pancake trong 1 khoảng thời gian. Trả về id, tên, loại, thời gian tin nhắn cuối, snippet.",
+        "Liệt kê các cuộc trò chuyện / nhóm Zalo của page Pancake. Trả về tối đa 60 conversation mới nhất / call (theo Pancake v2). Để lấy trang tiếp, truyền `last_conversation_id` = id của conversation cuối cùng từ call trước.",
       inputSchema: {
         type: "object",
         properties: {
           limit: {
             type: "number",
-            description: "Số cuộc trò chuyện tối đa trả về (1-200). Mặc định 50.",
-            default: 50,
+            description:
+              "Số conversation tối đa trả về sau khi filter client-side. Pancake luôn trả 60/call nên đặt >60 không có tác dụng. Mặc định 60.",
+            default: 60,
           },
-          page: {
-            type: "number",
-            description: "Số trang (1-indexed). Mặc định 1.",
-            default: 1,
+          last_conversation_id: {
+            type: "string",
+            description:
+              "(Optional) ID của conversation cuối từ call trước, dùng để phân trang. Để trống = 60 conversation mới nhất.",
           },
           days_back: {
             type: "number",
@@ -236,13 +270,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             description:
               "(Optional) ISO datetime hoặc Unix timestamp. Mặc định = now.",
           },
+          type: {
+            type: "string",
+            description:
+              "(Optional) Filter theo loại: 'INBOX' (chat 1-1) hoặc 'COMMENT'. Để trống = tất cả (bao gồm group Zalo).",
+          },
         },
       },
     },
     {
       name: "get_messages",
       description:
-        "Lấy tin nhắn trong 1 cuộc trò chuyện. Có thể filter theo thời gian (since) hoặc giới hạn số tin (limit).",
+        "Lấy tin nhắn trong 1 cuộc trò chuyện (Pancake v1 trả 30 tin / call, mới nhất trước). Có thể lấy nhiều trang qua `current_count`, filter client-side theo `since`.",
       inputSchema: {
         type: "object",
         properties: {
@@ -253,12 +292,19 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           since: {
             type: "string",
             description:
-              "ISO datetime (ví dụ '2026-04-15T00:00:00Z'). Chỉ trả về tin sau thời điểm này.",
+              "ISO datetime (ví dụ '2026-04-15T00:00:00Z'). Chỉ giữ lại tin sau thời điểm này (filter client-side).",
           },
           limit: {
             type: "number",
-            description: "Số tin nhắn tối đa. Mặc định 50.",
-            default: 50,
+            description:
+              "Số tin nhắn tối đa trả về. Server tự lật trang 30 tin / call đến khi đủ hoặc hết. Mặc định 30, tối đa 200.",
+            default: 30,
+          },
+          current_count: {
+            type: "number",
+            description:
+              "(Optional) Vị trí offset để bắt đầu lấy lùi về quá khứ (theo spec Pancake). Mặc định 0.",
+            default: 0,
           },
         },
         required: ["conversation_id"],
@@ -341,29 +387,29 @@ function toUnix(input) {
 }
 
 async function handleListConversations(args) {
-  const limit = Math.min(Math.max(Number(args.limit) || 50, 1), 200);
-  const page = Math.max(Number(args.page) || 1, 1);
+  // Pancake v2 trả tối đa 60/call, pagination qua last_conversation_id (cursor).
+  const limit = Math.min(Math.max(Number(args.limit) || 60, 1), 60);
   const daysBack = Math.max(Number(args.days_back) || 30, 1);
-
   const until = toUnix(args.until) || unixNow();
   const since = toUnix(args.since) || until - daysBack * 86400;
 
-  const data = await pancakeGet(`/pages/${PAGE_ID}/conversations`, {
-    since,
-    until,
-    page_number: page,
-    page_size: limit,
-  });
+  const query = { since, until };
+  if (args.last_conversation_id) query.last_conversation_id = args.last_conversation_id;
+  if (args.type) query.type = args.type;
+
+  const data = await pancakeGet(V2_BASE, `/pages/${PAGE_ID}/conversations`, query);
 
   const rawList = data.conversations || data.data || data.items || [];
-  const list = rawList.map(summarizeConversation);
+  const list = rawList.slice(0, limit).map(summarizeConversation);
+  const lastRaw = rawList[rawList.length - 1];
+  const nextCursor =
+    rawList.length >= 60 ? lastRaw?.id || lastRaw?._id || null : null;
 
   return {
-    total: data.total ?? null,
     count: list.length,
-    page,
     range_since: new Date(since * 1000).toISOString(),
     range_until: new Date(until * 1000).toISOString(),
+    next_last_conversation_id: nextCursor,
     conversations: list,
   };
 }
@@ -372,35 +418,51 @@ async function handleGetMessages(args) {
   if (!args.conversation_id) {
     throw new Error("Thiếu 'conversation_id'.");
   }
-  const limit = Math.min(Math.max(Number(args.limit) || 50, 1), 200);
-  const page = Math.max(Number(args.page) || 1, 1);
+  // Pancake v1: 30 msg/call, offset qua `current_count`. Lật trang cho đến khi đủ limit hoặc hết.
+  const limit = Math.min(Math.max(Number(args.limit) || 30, 1), 200);
+  const sinceMs = args.since
+    ? new Date(toIso(args.since)).getTime()
+    : null;
+  const path = `/pages/${PAGE_ID}/conversations/${encodeURIComponent(
+    args.conversation_id
+  )}/messages`;
 
-  const data = await pancakeGet(
-    `/pages/${PAGE_ID}/conversations/${encodeURIComponent(
-      args.conversation_id
-    )}/messages`,
-    { page_number: page, page_size: limit }
-  );
+  let offset = Math.max(Number(args.current_count) || 0, 0);
+  const collected = [];
+  let stopBySince = false;
 
-  const rawList = data.messages || data.data || data.items || [];
-  let list = rawList.map(summarizeMessage);
+  while (collected.length < limit && !stopBySince) {
+    const data = await pancakeGet(V1_BASE, path, { current_count: offset });
+    const batch = (data.messages || data.data || data.items || []).map(
+      summarizeMessage
+    );
+    if (batch.length === 0) break;
 
-  // Client-side filter vì API không hỗ trợ since
-  if (args.since) {
-    const sinceMs = new Date(toIso(args.since)).getTime();
-    if (!isNaN(sinceMs)) {
-      list = list.filter((m) => {
-        if (!m.sent_at) return true;
-        return new Date(m.sent_at).getTime() >= sinceMs;
-      });
+    // Pancake trả 30 tin chronological (oldest→newest); caller mong "N tin mới nhất"
+    // → sắp ngược để newest-first trong batch này.
+    batch.sort((a, b) => {
+      const ta = a.sent_at ? new Date(a.sent_at).getTime() : 0;
+      const tb = b.sent_at ? new Date(b.sent_at).getTime() : 0;
+      return tb - ta;
+    });
+
+    for (const m of batch) {
+      if (sinceMs && m.sent_at && new Date(m.sent_at).getTime() < sinceMs) {
+        stopBySince = true;
+        break;
+      }
+      collected.push(m);
+      if (collected.length >= limit) break;
     }
+    if (batch.length < 30) break; // hết tin
+    offset += batch.length;
   }
 
   return {
     conversation_id: args.conversation_id,
-    count: list.length,
-    page,
-    messages: list,
+    count: collected.length,
+    next_current_count: stopBySince || collected.length < limit ? null : offset,
+    messages: collected,
   };
 }
 
@@ -418,7 +480,7 @@ async function handleSearchMessages(args) {
   if (args.conversation_id) {
     convIds = [args.conversation_id];
   } else {
-    const convs = await handleListConversations({ limit: 50 });
+    const convs = await handleListConversations({ limit: 60, days_back: daysBack });
     convIds = convs.conversations.map((c) => c.id).filter(Boolean);
   }
 
