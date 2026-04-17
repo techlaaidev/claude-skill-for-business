@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "techla-pancake",
   "display_name": "Techla Pancake Zalo Monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Theo dõi và phân tích tin nhắn từ các nhóm Zalo của Pancake (dành cho chủ quán cafe/F&B).",
   "long_description": "MCP extension cho Claude Desktop, kết nối với Pancake để chủ quán có thể hỏi Claude về tình hình nhóm Zalo — ví dụ 'nhóm nhân viên có vấn đề gì cần xử lý', 'khách VIP phàn nàn gì tuần này'. Chỉ cần Pancake API key và Page ID, không cần cài thêm gì.",
   "author": {

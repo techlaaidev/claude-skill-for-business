@@ -124,23 +124,43 @@ function toIso(input) {
 function summarizeConversation(c) {
   return {
     id: c.id || c.conversation_id || c._id,
-    title: c.title || c.name || c.customer_name || "(không có tên)",
-    member_count: c.member_count ?? c.total_member ?? null,
-    last_message_at: toIso(c.last_sent_at || c.updated_at || c.last_message_time),
-    unread_count: c.unread_count ?? c.unread ?? null,
+    title:
+      c.from?.name ||
+      c.title ||
+      c.name ||
+      c.customer_name ||
+      c.page_customer?.name ||
+      "(không có tên)",
+    type: c.type || null,
+    message_count: c.message_count ?? null,
+    last_message_at: toIso(c.updated_at || c.inserted_at || c.last_sent_at),
+    seen: c.seen ?? null,
     last_message_snippet:
       (c.snippet || c.last_message || "").toString().slice(0, 140) || null,
   };
+}
+
+function stripHtml(s) {
+  return (s || "")
+    .toString()
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .trim();
 }
 
 function summarizeMessage(m) {
   return {
     id: m.id || m._id,
     from: m.from?.name || m.sender_name || m.customer_name || "(không rõ)",
-    from_type: m.from?.type || m.sender_type || null,
-    content: (m.message || m.content || m.text || "").toString(),
+    from_id: m.from?.id || null,
+    type: m.type || null,
+    content: stripHtml(m.message || m.content || m.text || ""),
     attachments: (m.attachments || []).map((a) => ({
-      type: a.type,
+      type: a.type || null,
       url: a.url || a.src || null,
     })),
     sent_at: toIso(m.inserted_at || m.created_at || m.sent_at),
@@ -165,7 +185,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "list_conversations",
       description:
-        "Liệt kê các cuộc trò chuyện / nhóm Zalo của page Pancake. Trả về id, tên, số thành viên, thời gian tin nhắn cuối, số tin chưa đọc.",
+        "Liệt kê các cuộc trò chuyện / nhóm Zalo của page Pancake trong 1 khoảng thời gian. Trả về id, tên, loại, thời gian tin nhắn cuối, snippet.",
       inputSchema: {
         type: "object",
         properties: {
@@ -178,6 +198,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
             type: "number",
             description: "Số trang (1-indexed). Mặc định 1.",
             default: 1,
+          },
+          days_back: {
+            type: "number",
+            description:
+              "Lọc conversation có hoạt động trong N ngày qua. Mặc định 30.",
+            default: 30,
+          },
+          since: {
+            type: "string",
+            description:
+              "(Optional) ISO datetime hoặc Unix timestamp. Override days_back.",
+          },
+          until: {
+            type: "string",
+            description:
+              "(Optional) ISO datetime hoặc Unix timestamp. Mặc định = now.",
           },
         },
       },
@@ -269,21 +305,44 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 // Tool handlers
 // ───────────────────────────────────────────────────────────────
 
+function unixNow() {
+  return Math.floor(Date.now() / 1000);
+}
+
+function toUnix(input) {
+  if (!input) return null;
+  if (typeof input === "number") {
+    return input < 1e12 ? input : Math.floor(input / 1000);
+  }
+  const d = new Date(input);
+  if (!isNaN(d.getTime())) return Math.floor(d.getTime() / 1000);
+  return null;
+}
+
 async function handleListConversations(args) {
   const limit = Math.min(Math.max(Number(args.limit) || 50, 1), 200);
   const page = Math.max(Number(args.page) || 1, 1);
+  const daysBack = Math.max(Number(args.days_back) || 30, 1);
+
+  const until = toUnix(args.until) || unixNow();
+  const since = toUnix(args.since) || until - daysBack * 86400;
 
   const data = await pancakeGet(`/pages/${PAGE_ID}/conversations`, {
+    since,
+    until,
+    page_number: page,
     page_size: limit,
-    current_count: (page - 1) * limit,
   });
 
   const rawList = data.conversations || data.data || data.items || [];
   const list = rawList.map(summarizeConversation);
 
   return {
+    total: data.total ?? null,
     count: list.length,
     page,
+    range_since: new Date(since * 1000).toISOString(),
+    range_until: new Date(until * 1000).toISOString(),
     conversations: list,
   };
 }
@@ -293,26 +352,33 @@ async function handleGetMessages(args) {
     throw new Error("Thiếu 'conversation_id'.");
   }
   const limit = Math.min(Math.max(Number(args.limit) || 50, 1), 200);
-
-  const query = { page_size: limit };
-  if (args.since) {
-    const iso = toIso(args.since);
-    if (iso) query.since = iso;
-  }
+  const page = Math.max(Number(args.page) || 1, 1);
 
   const data = await pancakeGet(
     `/pages/${PAGE_ID}/conversations/${encodeURIComponent(
       args.conversation_id
     )}/messages`,
-    query
+    { page_number: page, page_size: limit }
   );
 
   const rawList = data.messages || data.data || data.items || [];
-  const list = rawList.map(summarizeMessage);
+  let list = rawList.map(summarizeMessage);
+
+  // Client-side filter vì API không hỗ trợ since
+  if (args.since) {
+    const sinceMs = new Date(toIso(args.since)).getTime();
+    if (!isNaN(sinceMs)) {
+      list = list.filter((m) => {
+        if (!m.sent_at) return true;
+        return new Date(m.sent_at).getTime() >= sinceMs;
+      });
+    }
+  }
 
   return {
     conversation_id: args.conversation_id,
     count: list.length,
+    page,
     messages: list,
   };
 }

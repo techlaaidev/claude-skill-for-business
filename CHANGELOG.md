@@ -2,6 +2,18 @@
 
 Theo chuẩn [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
+## [1.0.1] — 2026-04-17
+
+### Sửa
+
+- **Extension `techla-pancake`**: fix `list_conversations` trả về 0 do thiếu
+  params bắt buộc của Pancake Public API. Giờ truyền đủ `since`, `until`,
+  `page_number`, `page_size`. Default window = 30 ngày.
+- Sửa `summarizeConversation` dùng `from.name` (đúng với schema Pancake Zalo).
+- Sửa `handleGetMessages` truyền `page_number` bắt buộc. `since` filter
+  client-side vì endpoint không hỗ trợ.
+- Thêm `stripHtml()` làm sạch content tin nhắn Zalo (có HTML `<div>`, `<br>`).
+
 ## [1.0.0] — 2026-04-17
 
 Phiên bản đầu tiên của bundle. Gồm 4 module:

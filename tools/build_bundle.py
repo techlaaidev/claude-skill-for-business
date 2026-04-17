@@ -27,7 +27,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BUILD_DIR = REPO_ROOT / "build"
-OUT_NAME = "Techla-Business-Skills-v1.0.0"
+OUT_NAME = "Techla-Business-Skills-v1.0.1"
 OUT_ZIP = BUILD_DIR / f"{OUT_NAME}.zip"
 
 SKILLS = [
@@ -36,7 +36,7 @@ SKILLS = [
     "soan-van-ban",
 ]
 PANCAKE_DIR = "techla-pancake"
-PANCAKE_VERSION = "1.0.0"
+PANCAKE_VERSION = "1.0.1"
 
 EXCLUDE_NAMES = {".DS_Store", "__pycache__", ".pytest_cache", ".venv", "venv",
                  "node_modules", ".git", ".gitignore"}
