@@ -21,18 +21,40 @@
  * Rate limit: 5 req/page/s → throttle ≥ 220ms/req.
  */
 
-const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
-const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
-const {
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-} = require("@modelcontextprotocol/sdk/types.js");
+} from "@modelcontextprotocol/sdk/types.js";
+import { Buffer } from "node:buffer";
+import { appendFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+// Diagnostic log file: %TEMP%/techla-pancake-debug.log
+const DEBUG_LOG = join(tmpdir(), "techla-pancake-debug.log");
+function dlog(msg) {
+  try {
+    appendFileSync(DEBUG_LOG, `${new Date().toISOString()} ${msg}\n`);
+  } catch {}
+  console.error(msg);
+}
 
 // ───────────────────────────────────────────────────────────────
 // Config
 // ───────────────────────────────────────────────────────────────
 
-const API_KEY = process.env.PANCAKE_API_KEY;
+// Claude Desktop quirk: khi optional user_config để trống, Claude Desktop truyền
+// literal placeholder "${user_config.xxx}" thay vì empty string.
+// → sanitize: bỏ qua nếu giá trị chứa "${" để fallback về JWT decode / error.
+function sanitizeEnv(v) {
+  if (!v || typeof v !== "string") return "";
+  if (v.includes("${")) return "";
+  return v.trim();
+}
+
+const API_KEY = sanitizeEnv(process.env.PANCAKE_API_KEY);
 const V1_BASE = "https://pages.fm/api/public_api/v1";
 const V2_BASE = "https://pages.fm/api/public_api/v2";
 
@@ -52,7 +74,7 @@ function decodePageIdFromToken(token) {
   }
 }
 
-const PAGE_ID = process.env.PANCAKE_PAGE_ID || decodePageIdFromToken(API_KEY);
+const PAGE_ID = sanitizeEnv(process.env.PANCAKE_PAGE_ID) || decodePageIdFromToken(API_KEY);
 
 function requireConfig() {
   if (!API_KEY) {
@@ -95,14 +117,23 @@ async function pancakeGet(base, path, query = {}) {
   await throttle();
   const url = buildUrl(base, path, query);
 
+  // Diagnostic: log request URL đã redact access_token (giữ fingerprint đầu/cuối)
+  const safeUrl = url.replace(
+    /access_token=([^&]+)/,
+    (_, t) => `access_token=${t.slice(0, 10)}...${t.slice(-10)}[len=${t.length}]`
+  );
+  dlog(`[techla-pancake] GET ${safeUrl}`);
+
   let res;
   try {
     res = await fetch(url, { method: "GET" });
   } catch (err) {
+    dlog(`[techla-pancake] FETCH ERROR: ${err.message}`);
     throw new Error(
       `Không kết nối được Pancake (${err.message}). Kiểm tra internet hoặc BASE_URL.`
     );
   }
+  dlog(`[techla-pancake] ← HTTP ${res.status} ${res.statusText}`);
 
   if (res.status === 401 || res.status === 403) {
     throw new Error(
@@ -136,9 +167,10 @@ async function pancakeGet(base, path, query = {}) {
   // Pancake đôi khi trả HTTP 200 nhưng kèm {"success": false, "message": "..."}
   // → phải check field 'success' thay vì chỉ HTTP status.
   if (data && data.success === false) {
+    dlog(`[techla-pancake] ← BODY(fail): ${JSON.stringify(data).slice(0, 300)}`);
     const code = data.error_code ? ` (error_code=${data.error_code})` : "";
     const msg = data.message || "Pancake trả về lỗi không rõ";
-    if (/invalid.*access.*token|access_token/i.test(msg)) {
+    if (/invalid.*access.*token|access_token|renewed/i.test(msg)) {
       throw new Error(
         `Sai Pancake API key${code}: "${msg}". Mở Claude Desktop → Settings → Extensions → Techla Pancake → cập nhật API key mới.`
       );
@@ -146,6 +178,9 @@ async function pancakeGet(base, path, query = {}) {
     throw new Error(`Pancake lỗi${code}: ${msg}`);
   }
 
+  const convCount = Array.isArray(data?.conversations) ? data.conversations.length
+    : Array.isArray(data?.data) ? data.data.length : "?";
+  dlog(`[techla-pancake] ← BODY(ok): conversations=${convCount}`);
   return data;
 }
 
@@ -230,7 +265,7 @@ function textOf(msg) {
 // ───────────────────────────────────────────────────────────────
 
 const server = new Server(
-  { name: "techla-pancake", version: "1.0.4" },
+  { name: "techla-pancake", version: "1.0.5" },
   { capabilities: { tools: {} } }
 );
 
@@ -591,13 +626,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error(
-    `[techla-pancake] MCP server started. Page: ${PAGE_ID || "(chưa cấu hình)"}`
+  // Diagnostic: log token fingerprint (first 10 + last 10 chars) để verify config đúng
+  const k = API_KEY || "";
+  const fp = k.length > 30 ? `${k.slice(0, 10)}...${k.slice(-10)} (len=${k.length})` : "(empty/short)";
+  dlog(
+    `[techla-pancake] MCP server started. Page: ${PAGE_ID || "(chưa cấu hình)"} | TokenFP: ${fp}`
   );
 }
 
-// Chỉ chạy stdio server khi được invoke trực tiếp (không chạy khi require từ test)
-if (require.main === module) {
+// Electron UtilityProcess không set argv[1] chuẩn → chạy main() mặc định khi import.
+// Test harness set PANCAKE_SKIP_MAIN=1 để gọi handlers trực tiếp không cần stdio.
+if (process.env.PANCAKE_SKIP_MAIN !== "1") {
   main().catch((err) => {
     console.error("[techla-pancake] FATAL:", err);
     process.exit(1);
@@ -605,8 +644,5 @@ if (require.main === module) {
 }
 
 // Export handlers để test độc lập
-module.exports = {
-  HANDLERS,
-  decodePageIdFromToken,
-  getPageId: () => PAGE_ID,
-};
+export { HANDLERS, decodePageIdFromToken };
+export const getPageId = () => PAGE_ID;

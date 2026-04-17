@@ -2,6 +2,28 @@
 
 Theo chuẩn [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
+## [1.0.5] — 2026-04-17
+
+### Sửa
+
+- **Extension `techla-pancake`**: **convert server.js sang ESM** (`import`/`export`,
+  `package.json "type": "module"`). SDK `@modelcontextprotocol/sdk@1.0.4` là
+  ESM-only; trước đó dùng `require()` từ CJS nên module load fail silently trong
+  Claude Desktop Electron UtilityProcess → `initialize` timeout 60s → lỗi
+  *"Could not attach to MCP server"*.
+- **Extension `techla-pancake`**: bỏ check `require.main === module` →
+  `main()` chạy unconditional. Electron UtilityProcess không set `process.argv[1]`
+  chuẩn nên check này trả false → transport không attach → client timeout.
+  Test harness dùng env `PANCAKE_SKIP_MAIN=1` để gọi handlers trực tiếp.
+- **Extension `techla-pancake`**: **sanitize env placeholder chưa substitute**.
+  Claude Desktop quirk: khi optional `user_config.pancake_page_id` để trống,
+  không truyền empty string mà truyền literal `"${user_config.pancake_page_id}"`
+  vào env. Server giờ detect `${...}` → treat as empty → fallback về JWT decode.
+  Trước đó URL gọi Pancake có `/pages/${user_config.pancake_page_id}/...` →
+  Pancake trả 102 *"Invalid access_token"* (vì page_id sai).
+- **Extension `techla-pancake`**: thêm diagnostic log ra `%TEMP%/techla-pancake-debug.log`
+  (URL đã redact token, HTTP status, response body) để debug khi gặp lỗi.
+
 ## [1.0.4] — 2026-04-17
 
 ### Sửa
