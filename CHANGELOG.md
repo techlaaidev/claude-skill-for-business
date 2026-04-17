@@ -2,6 +2,16 @@
 
 Theo chuẩn [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/).
 
+## [1.0.4] — 2026-04-17
+
+### Sửa
+
+- **Extension `techla-pancake`**: **pin `@modelcontextprotocol/sdk` = `1.0.4`**
+  (trước để `^1.0.4` → npm pull về `1.29.0` kéo theo 89 package / 14 MB deps
+  gồm express, hono, ajv…). Built-in Node.js của Claude Desktop (MSIX Windows)
+  hang 60s khi load lượng dep đó → lỗi *"Could not attach to MCP server"*.
+  Bản này pin SDK nhẹ (13 package / 5.5 MB), attach tức thì.
+
 ## [1.0.3] — 2026-04-17
 
 ### Sửa

@@ -36,7 +36,7 @@ Extension **chỉ chạy trên Claude Desktop** (không chạy web/mobile).
 
 ## Bước 2 — Cài file `.mcpb`
 
-1. Trong bundle, vào `extensions/` → tìm file `techla-pancake-1.0.3.mcpb`.
+1. Trong bundle, vào `extensions/` → tìm file `techla-pancake-1.0.4.mcpb`.
 2. **Cách 1**: Double-click file → Claude Desktop tự mở dialog cài đặt.
 3. **Cách 2**: Mở Claude Desktop → Settings (`⌘/Ctrl + ,`) → tab **Extensions** → bấm **Install from file** → chọn `.mcpb`.
 

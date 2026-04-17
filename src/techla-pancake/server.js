@@ -230,7 +230,7 @@ function textOf(msg) {
 // ───────────────────────────────────────────────────────────────
 
 const server = new Server(
-  { name: "techla-pancake", version: "1.0.3" },
+  { name: "techla-pancake", version: "1.0.4" },
   { capabilities: { tools: {} } }
 );
 
